@@ -1,0 +1,24 @@
+services:
+  user:
+    container_name: userservice
+    image: stjarnstoft/userservice:dev
+    build:
+      context: .
+      target: dev
+    environment:
+      GB_CONSTRING: "mongodb://userdb"
+    ports:
+      - "8081:8080"
+      - "2345:2345"
+    volumes:
+      - ./:/app
+  user-db:
+    container_name: userdb
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - dbdata:/data/db
+
+volumes:
+  dbdata:
