@@ -29,7 +29,7 @@ COPY go.mod go.sum .air.toml ./
 RUN go mod download && go mod verify
 
 COPY *.go ./
-RUN go build -o /userservice
+RUN go build -o ./userservice
 
 FROM alpine:latest AS prod
 
