@@ -39,6 +39,19 @@ func (p *MongoDb) read(i *primitive.ObjectID) *User {
 	return &result
 }
 
+func (p *MongoDb) readByName(n *string) (*User, error) {
+	coll := p.userCollection()
+	filter := bson.D{{Key: "name", Value: n}}
+	var result User
+	err := coll.FindOne(
+		context.TODO(),
+		filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 func (p *MongoDb) update(u *User) *User {
 	coll := p.userCollection()
 	filter := bson.D{{Key: "_id", Value: u.Id}}

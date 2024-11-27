@@ -18,6 +18,11 @@ func PostUser(c *gin.Context) {
 		return
 	}
 	var db MongoDb
+	_, err := db.readByName(&newUser.Name)
+	if err == nil {
+		c.IndentedJSON(http.StatusNotAcceptable, nil)
+		return
+	}
 	db.create(&newUser)
 	c.IndentedJSON(http.StatusCreated, newUser)
 }
