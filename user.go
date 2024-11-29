@@ -35,6 +35,16 @@ func GetUser(c *gin.Context) {
 	user := db.read(&id)
 	c.IndentedJSON(http.StatusOK, user)
 }
+func GetUserByName(c *gin.Context) {
+	name := c.Param("name")
+	var db MongoDb
+	user, err := db.readByName(&name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "username not found"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
 func PutUser(c *gin.Context) {
 	var updatedUser User
 	if err := c.BindJSON(&updatedUser); err != nil {

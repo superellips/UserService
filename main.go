@@ -8,6 +8,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/api/version/user/:userId", GetUser)
+	router.GET("/api/version/user/name/:name", GetUserByName)
 	router.POST("/api/version/users", PostUser)
 	router.PUT("/api/version/users", PutUser)
 	router.DELETE("/api/version/user/:userId", DeleteUser)
