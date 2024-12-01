@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "userservice-deployment"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "userservice-app"
+  template:
+    metadata:
+      labels:
+        app: "userservice-app"
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: userservice-container
+        image: ghcr.io/superellips/userservice:latest
+        resources:
+          limits:
+            cpu: "10"
+            memory: "100Mi"
+          requests:
+            cpu: "10 "
+            memory: "50Mi"
+        ports:
+        - containerPort: 8080
