@@ -16,7 +16,7 @@ spec:
       - name: regcred
       containers:
       - name: userservice-container
-        image: ghcr.io/superellips/userservice:d992b5b934e8d08c1e1230ac52b1fd7f1f7f0c4f
+        image: ghcr.io/superellips/userservice:6b84eeb2d3235d0f8079f026836702dbdfd31bdf
         # resources:
         #   limits:
         #     cpu: "10"
