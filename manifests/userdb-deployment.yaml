@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: userdb
+spec:
+  selector:
+    matchLabels:
+      app: userdb
+  replicas: 1
+  serviceName: userdb-service
+  template:
+    metadata:
+      labels:
+        app: userdb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: userdb-data
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: userdb-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Mi
