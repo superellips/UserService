@@ -32,7 +32,11 @@ func GetUser(c *gin.Context) {
 		return
 	}
 	var db MongoDb
-	user := db.read(&id)
+	user, err := db.read(&id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
 	c.IndentedJSON(http.StatusOK, user)
 }
 func GetUserByName(c *gin.Context) {
@@ -48,18 +52,28 @@ func GetUserByName(c *gin.Context) {
 func PutUser(c *gin.Context) {
 	var updatedUser User
 	if err := c.BindJSON(&updatedUser); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 	var db MongoDb
-	updatedUser = *db.update(&updatedUser)
-	c.IndentedJSON(http.StatusAccepted, updatedUser)
+	result, err := db.update(&updatedUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "username not found"})
+		return
+	}
+	c.IndentedJSON(http.StatusAccepted, result)
 }
 func DeleteUser(c *gin.Context) {
 	userId, err := primitive.ObjectIDFromHex(c.Param("userId"))
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "not a valid id"})
 		return
 	}
 	var db MongoDb
-	deletedUser := *db.delete(&userId)
+	deletedUser, err := db.delete(&userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "not able to remove user"})
+		return
+	}
 	c.IndentedJSON(http.StatusAccepted, deletedUser)
 }

@@ -11,39 +11,31 @@ import (
 )
 
 type MongoDb struct {
-	Uri string
+	Uri  string
+	Coll *mongo.Collection
 }
 
-func (p *MongoDb) create(u *User) *User {
-	coll := p.userCollection()
-	result, err := coll.InsertOne(
+func (p *MongoDb) create(u *User) (*User, error) {
+	if err := p.getUserCollection(); err != nil {
+		return nil, err
+	}
+	result, err := p.Coll.InsertOne(
 		context.TODO(),
 		u)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	u.Id = result.InsertedID.(primitive.ObjectID)
-	return u
+	return u, nil
 }
 
-func (p *MongoDb) read(i *primitive.ObjectID) *User {
-	coll := p.userCollection()
+func (p *MongoDb) read(i *primitive.ObjectID) (*User, error) {
+	if err := p.getUserCollection(); err != nil {
+		return nil, err
+	}
 	filter := bson.D{{Key: "_id", Value: i}}
 	var result User
-	err := coll.FindOne(
-		context.TODO(),
-		filter).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-	return &result
-}
-
-func (p *MongoDb) readByName(n *string) (*User, error) {
-	coll := p.userCollection()
-	filter := bson.D{{Key: "name", Value: n}}
-	var result User
-	err := coll.FindOne(
+	err := p.Coll.FindOne(
 		context.TODO(),
 		filter).Decode(&result)
 	if err != nil {
@@ -52,39 +44,57 @@ func (p *MongoDb) readByName(n *string) (*User, error) {
 	return &result, nil
 }
 
-func (p *MongoDb) update(u *User) *User {
-	coll := p.userCollection()
+func (p *MongoDb) readByName(n *string) (*User, error) {
+	if err := p.getUserCollection(); err != nil {
+		return nil, err
+	}
+	filter := bson.D{{Key: "name", Value: n}}
+	var result User
+	err := p.Coll.FindOne(
+		context.TODO(),
+		filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (p *MongoDb) update(u *User) (*User, error) {
+	if err := p.getUserCollection(); err != nil {
+		return nil, err
+	}
 	filter := bson.D{{Key: "_id", Value: u.Id}}
 	var result User
-	err := coll.FindOneAndReplace(
+	err := p.Coll.FindOneAndReplace(
 		context.TODO(),
 		filter,
 		u).Decode(&result)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &result
+	return &result, nil
 }
 
-func (p *MongoDb) delete(i *primitive.ObjectID) *User {
-	coll := p.userCollection()
+func (p *MongoDb) delete(i *primitive.ObjectID) (*User, error) {
+	if err := p.getUserCollection(); err != nil {
+		return nil, err
+	}
 	filter := bson.D{{Key: "_id", Value: i}}
 	var deletedUser User
-	err := coll.FindOneAndDelete(
-		context.TODO(),
-		filter).Decode(&deletedUser)
+	err := p.Coll.FindOneAndDelete(context.TODO(), filter).Decode(&deletedUser)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &deletedUser
+	return &deletedUser, nil
 }
 
-func (p *MongoDb) userCollection() *mongo.Collection {
+func (p *MongoDb) getUserCollection() error {
 	p.Uri = os.Getenv("GB_CONSTRING")
 	client, err := mongo.Connect(context.TODO(), options.Client().
 		ApplyURI(p.Uri))
 	if err != nil {
-		panic(err)
+		return err
 	}
-	return client.Database("user-service").Collection("users")
+	p.Coll = client.Database("user-service").Collection("users")
+	return nil
 }
